@@ -1,0 +1,162 @@
+import { registerBlockType } from '@wordpress/blocks';
+import { useBlockProps } from '@wordpress/block-editor';
+ 
+const blockStyle = {
+    backgroundColor: '#900',
+    color: '#fff',
+    padding: '20px',
+};
+ 
+registerBlockType( 'gutenberg-examples/example-01-basic-esnext', {
+    apiVersion: 2,
+    title: 'Example: Basic (esnext)',
+    icon: 'universal-access-alt',
+    category: 'design',
+    example: {},
+    edit() {
+        const blockProps = useBlockProps( { style: blockStyle } );
+ 
+        return <div { ...blockProps }>Hello World, step 1 (from the editor).</div>;
+    },
+    save() {
+        const blockProps = useBlockProps.save( { style: blockStyle } );
+ 
+        return <div { ...blockProps }>Hello World, step 1 (from the frontend).</div>;
+    },
+} );
+
+----------------------------------------------------
+
+Enqueue your JavaScript with the following PHP code:
+
+function myguten_enqueue() {
+    wp_enqueue_script(
+        'myguten-script',
+        plugins_url( 'myguten.js', __FILE__ ),
+        array( 'wp-blocks', 'wp-dom-ready', 'wp-edit-post' ),
+        filemtime( plugin_dir_path( __FILE__ ) . '/myguten.js' )
+    );
+}
+add_action( 'enqueue_block_editor_assets', 'myguten_enqueue' );
+The JavaScript code in myguten.js:
+
+wp.domReady( function() {
+    wp.blocks.unregisterBlockStyle( 'core/quote', 'large' );
+} );
+----------------------------------------------------
+
+wp.blocks.unregisterBlockStyle( 'core/quote', 'large' );
+----------------------------------------------------
+?php
+// my-plugin.php
+ 
+function my_plugin_deny_list_blocks() {
+    wp_enqueue_script(
+        'my-plugin-deny-list-blocks',
+        plugins_url( 'my-plugin.js', __FILE__ ),
+        array( 'wp-blocks', 'wp-dom-ready', 'wp-edit-post' )
+    );
+}
+add_action( 'enqueue_block_editor_assets', 'my_plugin_deny_list_blocks' );
+// my-plugin.js
+import { unregisterBlockType } from '@wordpress/blocks';
+import domReady from '@wordpress/dom-ready'
+ 
+domReady( function() {
+    unregisterBlockType( 'core/verse' );
+} );
+-------------------------------------------------
+
+<?php
+// my-plugin.php
+ 
+function my_plugin_allowed_block_types( $allowed_block_types, $post ) {
+    if ( $post->post_type !== 'post' ) {
+        return $allowed_block_types;
+    }
+    return array( 'core/paragraph' );
+}
+ 
+add_filter( 'allowed_block_types', 'my_plugin_allowed_block_types', 10, 2 );
+
+---------------------------------------------------
+
+<?php
+// my-plugin.php
+ 
+function my_plugin_block_categories( $categories, $post ) {
+    if ( $post->post_type !== 'post' ) {
+        return $categories;
+    }
+    return array_merge(
+        $categories,
+        array(
+            array(
+                'slug' => 'my-category',
+                'title' => __( 'My category', 'my-plugin' ),
+                'icon'  => 'wordpress',
+            ),
+        )
+    );
+}
+add_filter( 'block_categories', 'my_plugin_block_categories', 10, 2 )
+----------------------------------------------------
+// my-plugin.js
+ 
+var allowedBlocks = [
+    'core/paragraph',
+    'core/image',
+    'core/html',
+    'core/freeform'
+];
+ 
+wp.blocks.getBlockTypes().forEach( function( blockType ) {
+    if ( allowedBlocks.indexOf( blockType.name ) === -1 ) {
+        wp.blocks.unregisterBlockType( blockType.name );
+    }
+} );
+----------------------------------------------------
+unregister_block_style( 'core/quote', 'fancy-quote' );
+----------------------------------------------------
+1 )
+register_block_style(
+    'core/quote',
+    array(
+        'name'         => 'blue-quote',
+        'label'        => __( 'Blue Quote' ),
+        'inline_style' => '.wp-block-quote.is-style-blue-quote { color: blue; }',
+    )
+);
+
+2 )
+wp_register_style( 'myguten-style', get_template_directory_uri() . '/custom-style.css' );
+ 
+// ...
+ 
+register_block_style(
+    'core/quote',
+    array(
+        'name'         => 'fancy-quote',
+        'label'        => 'Fancy Quote',
+        'style_handle' => 'myguten-style',
+    )
+);
+----------------------------------------------------
+
+register_block_pattern(
+    'my-plugin/my-awesome-pattern',
+    array(
+        'title'       => __( 'Two buttons', 'my-plugin' ),
+        'description' => _x( 'Two horizontal buttons, the left button is filled in, and the right button is outlined.', 'Block pattern description', 'my-plugin' ),
+        'content'     => "<!-- wp:buttons {\"align\":\"center\"} -->\n<div class=\"wp-block-buttons aligncenter\"><!-- wp:button {\"backgroundColor\":\"very-dark-gray\",\"borderRadius\":0} -->\n<div class=\"wp-block-button\"><a class=\"wp-block-button__link has-background has-very-dark-gray-background-color no-border-radius\">" . esc_html__( 'Button One', 'my-plugin' ) . "</a></div>\n<!-- /wp:button -->\n\n<!-- wp:button {\"textColor\":\"very-dark-gray\",\"borderRadius\":0,\"className\":\"is-style-outline\"} -->\n<div class=\"wp-block-button is-style-outline\"><a class=\"wp-block-button__link has-text-color has-very-dark-gray-color no-border-radius\">" . esc_html__( 'Button Two', 'my-plugin' ) . "</a></div>\n<!-- /wp:button --></div>\n<!-- /wp:buttons -->",
+    )
+);
+
+unregister_block_pattern( 'my-plugin/my-awesome-pattern' );
+unregister_block_pattern_category( 'hero' );
+register_block_pattern_category(
+    'hero',
+    array( 'label' => __( 'Hero', 'my-plugin' ) )
+);
+
+----------------------------------------------------
