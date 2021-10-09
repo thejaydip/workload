@@ -1,4 +1,9 @@
 # GIT Useful Commands
+To set your global username/email configuration:
+
+    git config --global user.name "ADD USERNAME HERE"
+    git config --global user.email "ADD EMAIL ADDRESS HERE"
+
 Create New Branch
 
     git checkout -b
