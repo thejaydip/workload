@@ -1,0 +1,7 @@
+
+1 ) Gulp 4 watch syntax
+	gulp.task('default', gulp.parallel( 'browserSync', 'sass', 'concat',  function(done) {
+	  gulp.watch('inc/scss/**/*.scss').on('change', gulp.series('sass', 'browserSync'));
+	  gulp.watch('inc/js/*.js').on('change', gulp.series('concat'));
+	  done();
+	}));
